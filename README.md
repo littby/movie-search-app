@@ -8,10 +8,10 @@
 ***
 
 ## 파일구조
-- 'app.js': 영화 검색 API 연동
-- 'models/': 영화 정보를 저장하는 모델 파일 
-- 'views/': 사용자에게 보여지는 HTML 구조
-- 'public/': CSS, 이미지 폴더
+- **'app.js'**: 영화 검색 API 연동
+- **'models/'**: 영화 정보를 저장하는 모델 파일 
+- **'views/'**: 사용자에게 보여지는 HTML 구조
+- **'public/'**: CSS, 이미지 폴더
 
   ***
 
@@ -49,7 +49,23 @@ app.get('/search', async (req, res) => {
     }
 });
 ```
-#### 2.1 Express 초기화 및 설정 
+#### 2.1 Express 초기화 및 기본설정 
+- **Express** 라이브러리를 불러와 라우팅, 미들웨어 등을 쉽게 처리할 수 있게끔 합니다. 
+```javascript
+const express = require('express');
+const axios = require('axios');
+require('dotenv').config();
+const app = express();
+```
+#### 2.2 서버포트 설정 및 뷰 엔진 설정(EJS 사용)
+- **EJS** 템플릿 엔진을 사용하면 HTML 안에서 JavaScript 코드를 동적으로 렌더링할 수 있습니다.
+```javascript
+const PORT = 3000;
+const OMDB_API_KEY = process.env.OMDB_API_KEY;
+
+app.set('view engine', 'ejs');
+app.use(express.static('public')); 
+```
   
 
 
