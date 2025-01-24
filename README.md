@@ -24,7 +24,6 @@
   ```javascript
   app.get('/', (req, res) => {
     res.render('index', { movie: null, error: null });
-}); 
 ```
 #### 1.2 영화검색
 - *get '/search'* 경로에서는OMDB API를 통해 영화 검색 기능을 처리합니다.
