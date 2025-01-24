@@ -21,15 +21,17 @@
    
 #### 1.1 홈페이지 렌더링 
 - *get '/'* 경로에서는 기본 페이지를 렌더링 합니다.
-  
- ```javascript app.get('/', (req, res) => {
+  ```javascript
+  app.get('/', (req, res) => {
     res.render('index', { movie: null, error: null });
-}); ```
+}); 
+```
 #### 1.2 영화검색
 - *get '/search'* 경로에서는OMDB API를 통해 영화 검색 기능을 처리합니다.
 - 에러 발생 시 사용자에게 메세지를 보여줍니다. 
 
-```javascript app.get('/search', async (req, res) => {
+```javascript
+app.get('/search', async (req, res) => {
     const movieTitle = req.query.title;
     if (!movieTitle) {
         return res.render('index', { movie: null, error: '영화 제목을 입력해주세요.' });
@@ -45,7 +47,8 @@
         console.error(error);  // 콘솔에 에러 출력
         res.render('index', { movie: null, error: '영화 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.' });
     }
-}); ```
+});
+```
 #### 2.1 Express 초기화 및 설정 
   
 
