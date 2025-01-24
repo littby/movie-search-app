@@ -17,14 +17,23 @@
 
 ## 코드 소개 
 
-#### 1. app.js
+### 1. app.js
    ```
 
+
+   
+#### 1.1 홈페이지 렌더링 
+- *get '/'* 경로에서는 기본 페이지를 렌더링 합니다.
+```
 app.get('/', (req, res) => {
     res.render('index', { movie: null, error: null });
 });
-
-   app.get('/search', async (req, res) => {
+```
+#### 1.2 영화검색
+- *get '/search'* 경로에서는OMDB API를 통해 영화 검색 기능을 처리합니다.
+- 에러 발생 시 사용자에게 메세지를 보여줍니다. 
+```
+app.get('/search', async (req, res) => {
     const movieTitle = req.query.title;
     if (!movieTitle) {
         return res.render('index', { movie: null, error: '영화 제목을 입력해주세요.' });
@@ -42,16 +51,10 @@ app.get('/', (req, res) => {
     }
 });
 ```
+#### 2.1 Express 초기화 및 설정 
+  
 
-- Express 를 사용하여 서버를 설정하고, 영화 검색 API (OMDB)를 호출하여
-영화 정보를 렌더링 하는 라우터를 처리합니다.
 
-
-##### API와 상호작용
-- **axios** 라이브러리를 사용하여 API 요청을 보냅니다.
-- **async/await** 사용하여 요청을 기다린 후, API로 부터 받은 데이터를 클라이언트에 전달합니다. 
-- *get /`* 경로에서는 기본 페이지를 렌더링합니다.
-- *get /search`* 경로에서는 영화 검색 기능을 처리합니다.
 
 
 
