@@ -21,11 +21,12 @@
    
 #### 1.1 홈페이지 렌더링 
 - *get '/'* 경로에서는 기본 페이지를 렌더링 합니다.
-  ```javascript
+```javascript
   app.get('/', (req, res) => {
     res.render('index', { movie: null, error: null });
 ```
-#### 1.2 영화검색
+
+ #### 1.2 영화검색
 - *get '/search'* 경로에서는OMDB API를 통해 영화 검색 기능을 처리합니다.
 - 에러 발생 시 사용자에게 메세지를 보여줍니다. 
 
