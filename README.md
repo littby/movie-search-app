@@ -3,15 +3,19 @@
 ## 프로젝트 소개
 영화 검색 API(OMDB)를 사용하여 영화 정보를 검색하고, 이에 맞는 정보(영화 포스터, 제목, 감독, 줄거리 등)를 제공합니다.
 
+***
+
 ## 파일구조
 - 'app.js': 영화 검색 API 연동
 - 'models/': 영화 정보를 저장하는 모델 파일 
 - 'views/': 사용자에게 보여지는 HTML 구조
 - 'public/': CSS, 이미지 폴더
 
+  ***
+
 ## 코드 소개 
 
-1. app.js
+##### 1. app.js
    ```
    app.get('/search', async (req, res) => {
     const movieTitle = req.query.title;
@@ -30,3 +34,5 @@
         res.render('index', { movie: null, error: '영화 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.' });
     }
 }); ```
+
+
