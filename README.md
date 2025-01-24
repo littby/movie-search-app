@@ -19,6 +19,11 @@
 
 ##### 1. app.js
    ```
+
+app.get('/', (req, res) => {
+    res.render('index', { movie: null, error: null });
+});
+
    app.get('/search', async (req, res) => {
     const movieTitle = req.query.title;
     if (!movieTitle) {
@@ -36,12 +41,13 @@
         res.render('index', { movie: null, error: '영화 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.' });
     }
 });
+```
 
 - Express 를 사용하여 서버를 설정하고, 영화 검색 API (OMDB)를 호출하여
 영화 정보를 렌더링 하는 라우터를 처리합니다.
 
-- get / 경로에서는 기본 페이지를 렌더링합니다.
-- ㅎㄷㅅ
+- get /` 경로에서는 기본 페이지를 렌더링합니다.
+- get /search` 경로에서는 영화 검색 기능을 처리합니다. 
 
 
 
