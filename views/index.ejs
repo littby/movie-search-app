@@ -16,21 +16,60 @@
     <!-- 로딩 상태 표시 -->
     <div id="loading" style="display: none;">로딩 중...</div>
 
-   <!-- 영화 정보 출력 부분 -->
-<!-- 영화 정보 출력 부분 -->
-<% if (movie) { %>
-    <div class="movie-card">
-        <h2><%= movie.Title %> (<%= movie.Year %>)</h2>
-        <img src="<%= movie.Poster %>" alt="Movie Poster">
-        <p><strong>줄거리:</strong> <%= movie.Plot %></p>
-        <p><strong>평점:</strong> <%= movie.imdbRating %> (IMDb)</p>
-        <p><strong>출연:</strong> <%= movie.Actors %></p>
-    </div>
-<% } else if (error) { %>
-    <p class="error-message"><%= error %></p>
-<% } %>
+    <!-- 영화 정보 출력 부분 -->
+    <% if (movie) { %>
+        <div class="movie-card">
+            <h2><%= movie.Title %> (<%= movie.Year %>)</h2>
+            <img src="<%= movie.Poster %>" alt="Movie Poster">
+            <p><strong>줄거리:</strong> <%= movie.Plot %></p>
+            <p><strong>평점:</strong> <%= movie.imdbRating %> (IMDb)</p>
+            <p><strong>출연:</strong> <%= movie.Actors %></p>
 
+            <h3>별점 및 의견 남기기</h3>
+            <form action="/review" method="POST">
+                <input type="hidden" name="movieTitle" value="<%= movie.Title %>">
+                <label for="author">작성자:</label>
+                <input type="text" name="author" placeholder="닉네임 입력하세요" required>
+                
+                <label for="rating">별점:</label>
+                <select name="rating" required>
+                    <option value="1">⭐</option>
+                    <option value="2">⭐⭐</option>
+                    <option value="3">⭐⭐⭐</option>
+                    <option value="4">⭐⭐⭐⭐</option>
+                    <option value="5">⭐⭐⭐⭐⭐</option>
+                </select>
 
+                <label for="comment">의견:</label>
+                <textarea name="comment" required></textarea>
+
+                <button type="submit">리뷰 남기기</button>
+            </form>
+
+            <!-- 저장된 리뷰 목록 -->
+            <h3>리뷰</h3>
+            <% if (reviews.length > 0) { %>
+                <ul>
+                    <% reviews.forEach(review => { %>
+                        <li>
+                            <strong>작성자: <%= review.author %></strong><br>
+                            <strong>⭐ <%= review.rating %></strong> - <%= review.comment %>
+                            
+                            <form action="/review/delete" method="POST" style="display: inline;">
+                                <input type="hidden" name="reviewId" value="<%= review._id %>">
+                                <input type="hidden" name="movieTitle" value="<%= movie.Title %>"> <!-- method-override 추가 -->
+                                <button type="submit">삭제</button>
+                            </form>
+                        </li>
+                    <% }); %>
+                </ul>
+            <% } else { %>
+                <p>아직 리뷰가 없습니다. 첫 번째 리뷰를 남겨보세요!</p>
+            <% } %>
+        </div> <!-- ✅ 영화 카드 닫기 (여기까지가 movie 정보) -->
+    <% } else if (error) { %> <!-- ✅ `else if (error)`를 바깥으로 빼기 -->
+        <p class="error-message"><%= error %></p>
+    <% } %>
 
     <script>
         // 폼 제출 시 로딩 상태 표시
@@ -40,3 +79,4 @@
     </script>
 </body>
 </html>
+
