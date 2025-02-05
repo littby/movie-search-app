@@ -129,9 +129,11 @@ app.post('/review/delete', async (req, res) => {
 });
 ```
 - 발생한 에러
+  
   : 기본 HTTP 메소드에서는 GET과 POST만을 지원함 -> DELETE 방식이 처리되지 않음. 
 - 해결방법
-  :method-override 를 추가해, DELETE 요청을 처리할 수 있게 함. 
+  
+  : **method-override** 를 추가해, **DELETE 요청**을 처리할 수 있게 함. 
 
 ```terminal
 npm install method-override
@@ -142,12 +144,12 @@ import express from 'express';
 import axios from 'axios';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv'; 
-**import methodOverride from 'method-override';** 
+import methodOverride from 'method-override'; 
 import Review from './models/Review.js';
 ...
 
 // method-override 설정
-**app.use(methodOverride('_method'));**
+app.use(methodOverride('_method'));
 ...
 ```
 
