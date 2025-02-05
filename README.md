@@ -117,6 +117,33 @@ const OMDB_API_KEY = process.env.OMDB_API_KEY;
 app.set('view engine', 'ejs');
 app.use(express.static('public')); 
 ```
+
+#### 3.1 MongoDB에 저장될 리뷰데이터 형식 
+```javascript
+import mongoose from 'mongoose';
+
+// 리뷰 데이터 형식 정의 
+const reviewSchema = new mongoose.Schema({
+    movieTitle: {
+        type: String,
+        required: true,
+    },
+    rating: {
+        type: Number,
+        required: true,
+    },
+    comment: {
+        type: String,
+        required: true,
+    },
+});
+
+// 리뷰 모델 생성
+const Review = mongoose.model('Review', reviewSchema);
+
+export default Review; 
+```
+
   
 
 
