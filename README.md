@@ -99,6 +99,60 @@ res.render('index', { movie: response.data, error: null, reviews: reviews });
 ...
 ```
 
+#### 1.4 리뷰 작성자 표시 기능 
+```javascript
+app.post('/review', async (req, res) => {
+    const { movieTitle, rating, comment, author } = req.body;
+// author를 추가
+```
+
+#### 1.5 리뷰 삭제 기능 
+
+```javascript
+app.post('/review/delete', async (req, res) => {
+   // 삭제할 Id 값과 영화 제목을 가져옴 
+    const { reviewId, movieTitle } = req.body;
+    console.log('삭제하려는 영화 제목:', movieTitle);
+
+    try {
+        // MongoDB에서 리뷰를 삭제
+        await Review.findByIdAndDelete(reviewId);
+        console.log(`✅ 리뷰 삭제 완료: ${reviewId}`);
+
+       // 리뷰를 삭제한 후 /search 페이지로 리디렉션함. 
+        res.redirect(`/search?title=${movieTitle}`);
+
+    } catch (error) {
+        console.error("❌ 리뷰 삭제 오류:", error);
+        res.redirect(`/search?title=${movieTitle}&error=리뷰 삭제 실패`);
+    }
+});
+```
+발생한 에러 
+: 기본 HTTP 메소드에서는 GET과 POST만을 지원함. DELETE 방식이 처리되지 않음. 
+해결방법
+: method-override 를 추가해, DELETE 요청을 처리할 수 있게 함. 
+
+```terminal
+npm install method-override
+```
+
+```javascript
+import express from 'express';
+import axios from 'axios';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv'; 
+**import methodOverride from 'method-override';** 
+import Review from './models/Review.js';
+...
+
+// method-override 설정
+**app.use(methodOverride('_method'));**
+...
+```
+
+
+
 
 #### 2.1 Express 초기화 및 기본설정 
 - **Express** 라이브러리를 불러와 라우팅, 미들웨어 등을 쉽게 처리할 수 있게끔 합니다. 
