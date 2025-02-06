@@ -141,6 +141,7 @@ app.post('/review/delete', async (req, res) => {
 npm install method-override
 ```
 
+
 ```javascript
 import express from 'express';
 import axios from 'axios';
@@ -156,6 +157,20 @@ app.use(methodOverride('_method'));
 ```
 
 #### 1.6 리뷰 공감버튼, 비공감버튼 API 
+- 리뷰데이터 형식에 likes(공감), dislikes(비공감) 설정 
+
+```javascript Review.js 
+likes: {
+        type: Number,
+        default: 0
+    },
+    dislikes: {
+        type: Number,
+        default: 0
+    }
+```
+- id를 받아 좋아요와 싫어요를 증가시킨 다음 데이터베이스에 저장 
+
 ```javasctipt
 // POST 요청을 받으며, 공감버튼을 누를 때 동작 
 app.post('/review/like/:id', async (req, res) => {
