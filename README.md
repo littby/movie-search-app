@@ -82,8 +82,10 @@ app.post('/review', async (req, res) => {
 });
 ```
 
-문제: 리뷰를 작성한 후에만 기존 리뷰들이 보여짐
-해결: **GET /search**에서도 기존 리뷰를 불러올 수 있도록 함. 
+- 문제:
+  리뷰를 작성한 후에만 기존 리뷰들이 보여짐
+- 해결:
+   **GET /search**에서도 기존 리뷰를 불러올 수 있도록 함. 
 사용자가 리뷰를 작성하지 않더라도, 영화 검색 시 기존 리뷰가 보이도록 수정함 
 
 **수정한 코드**  
@@ -153,6 +155,40 @@ app.use(methodOverride('_method'));
 ...
 ```
 
+#### 1.6 리뷰 공감버튼, 비공감버튼 API 
+```javasctipt
+// POST 요청을 받으며, 공감버튼을 누를 때 동작 
+app.post('/review/like/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        review.likes += 1; //공감 수를 1 증가시킴 
+        await review.save(); //리뷰데이터 저장 
+
+       // 리뷰페이지로 돌아가, 공감수가 증가한 상태로 렌더링함.
+      // 'back' 은 이전 페이지로 돌아가는 기능 
+        res.redirect('back'); 
+    } catch (error) { //예외처리 
+        console.error("공감버튼 오류:", error);
+        res.redirect('back'); // 에러가 나도 다시 같은 페이지로
+    }
+});
+
+// 비동의버튼 
+app.post('/review/dislike/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        review.dislikes += 1;
+        await review.save();
+        
+        res.redirect('back'); 
+    } catch (error) {
+        console.error("비동의 버튼 오류:", error);
+        res.redirect('back'); 
+    }
+});
+```
+
+
 
 
 
@@ -164,6 +200,8 @@ const axios = require('axios');
 require('dotenv').config();
 const app = express();
 ```
+
+
 #### 2.2 서버포트 설정 및 뷰 엔진 설정(EJS 사용)
 - **EJS** 템플릿 엔진을 사용하면 HTML 안에서 JavaScript 코드를 동적으로 렌더링할 수 있습니다.
 ```javascript
