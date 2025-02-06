@@ -55,10 +55,18 @@
                             <strong>작성자: <%= review.author %></strong><br>
                             <strong>⭐ <%= review.rating %></strong> - <%= review.comment %>
                             
+                            <form action="/review/like/<%= review._id %>" method="POST" style="display: inline;">
+                                <button class="like-button" data-id="<%= review._id %>">👍 공감해요 (<%= review.likes %>)</button>
+
+                            </form>
+                            <form action="/review/dislike/<%= review._id %>" method="POST" style="display: inline;">
+                                <button class="dislike-button" data-id="<%= review._id %>">👎 동의 못해요 (<%= review.dislikes %>)</button>
+                            </form>
+
                             <form action="/review/delete" method="POST" style="display: inline;">
                                 <input type="hidden" name="reviewId" value="<%= review._id %>">
                                 <input type="hidden" name="movieTitle" value="<%= movie.Title %>"> <!-- method-override 추가 -->
-                                <button type="submit">삭제</button>
+                                <button class="delete-button" type="submit">🗑 삭제</button>
                             </form>
                         </li>
                     <% }); %>

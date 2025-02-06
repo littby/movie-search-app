@@ -4,6 +4,10 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv'; 
 import methodOverride from 'method-override'; 
 import Review from './models/Review.js';
+import passport from 'passport';
+import session from 'express-session'; 
+import User from './models/user.js'; // 사용자 모델 불러오기
+import './config/passport.js'; // passport 설정 파일
 
 
 dotenv.config();  // .env 파일 불러오기
@@ -18,6 +22,18 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("✅ MongoDB 연결 성공!"))
     .catch(err => console.error("❌ MongoDB 연결 실패:", err));
 
+
+// 세션 설정
+app.use(session({
+    secret: 'secret', // 세션 암호화 키
+    resave: false,
+    saveUninitialized: false,
+}));
+
+// Passport 초기화
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); 
 app.use(express.static('public'));
@@ -27,12 +43,52 @@ app.use(methodOverride('_method'));
 // EJS 설정
 app.set('view engine', 'ejs');
 
+//회원가입 API 
+app.post('/signup', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const newUser = new User({ email, password });
+        await newUser.save();
+        res.redirect('/login'); // 회원가입 후 로그인 페이지로 리디렉션
+    } catch (error) {
+        console.error("❌ 회원가입 오류:", error);
+        res.redirect('/signup'); // 오류 발생 시 회원가입 페이지로 리디렉션
+    }
+});
+
+//로그인 API
+app.post('/login', passport.authenticate('local', {
+    successRedirect: '/', // 로그인 성공 후 홈으로 리디렉션
+    failureRedirect: '/login', // 로그인 실패 시 로그인 페이지로 리디렉션
+    failureFlash: true, // 로그인 실패 시 플래시 메시지 표시
+}));
+
+//로그아웃 API
+app.get('/logout', (req, res) => {
+    req.logout((err) => {
+        if (err) return next(err);
+        res.redirect('/'); // 로그아웃 후 홈 페이지로 리디렉션
+    });
+});
 
 app.use(express.static('public')); // 정적 파일 경로 설정
 
 // 기본 페이지 렌더링
 app.get('/', (req, res) => {
     res.render('index', { movie: null, error: null }); // 기본 페이지는 movie와 error를 null로 전달
+});
+
+// 인증 
+function isAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/login'); // 로그인 안 된 사용자는 로그인 페이지로 리디렉션
+}
+
+// 예시: 로그인한 사용자만 접근할 수 있는 페이지
+app.get('/dashboard', isAuthenticated, (req, res) => {
+    res.render('dashboard', { user: req.user }); // 로그인한 사용자 정보 전달
 });
 
 
@@ -109,4 +165,35 @@ app.post('/review/delete', async (req, res) => {
         res.redirect(`/search?title=${movieTitle}&error=리뷰 삭제 실패`);
     }
 });
+
+app.post('/review/like/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        review.likes += 1;
+        await review.save();
+        
+        res.redirect('back'); 
+    } catch (error) {
+        console.error("공감버튼 오류:", error);
+        res.redirect('back'); 
+    }
+});
+
+
+app.post('/review/dislike/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        review.dislikes += 1;
+        await review.save();
+        
+        res.redirect('back'); 
+    } catch (error) {
+        console.error("비동의 버튼 오류:", error);
+        res.redirect('back'); 
+    }
+});
+
+
+
+
 
