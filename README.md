@@ -171,7 +171,7 @@ likes: {
 ```
 - id를 받아 좋아요와 싫어요를 증가시킨 다음 데이터베이스에 저장 
 
-```javasctipt
+```javasctipt app.js
 // POST 요청을 받으며, 공감버튼을 누를 때 동작 
 app.post('/review/like/:id', async (req, res) => {
     try {
