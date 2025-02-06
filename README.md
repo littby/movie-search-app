@@ -82,8 +82,10 @@ app.post('/review', async (req, res) => {
 });
 ```
 
-문제: 리뷰를 작성한 후에만 기존 리뷰들이 보여짐
-해결: **GET /search**에서도 기존 리뷰를 불러올 수 있도록 함. 
+- 문제:
+  리뷰를 작성한 후에만 기존 리뷰들이 보여짐
+- 해결:
+   **GET /search**에서도 기존 리뷰를 불러올 수 있도록 함. 
 사용자가 리뷰를 작성하지 않더라도, 영화 검색 시 기존 리뷰가 보이도록 수정함 
 
 **수정한 코드**  
@@ -99,6 +101,111 @@ res.render('index', { movie: response.data, error: null, reviews: reviews });
 ...
 ```
 
+#### 1.4 리뷰 작성자 표시 기능 
+```javascript
+app.post('/review', async (req, res) => {
+    const { movieTitle, rating, comment, author } = req.body;
+// author를 추가
+```
+
+#### 1.5 리뷰 삭제 기능 
+
+```javascript
+app.post('/review/delete', async (req, res) => {
+   // 삭제할 Id 값과 영화 제목을 가져옴 
+    const { reviewId, movieTitle } = req.body;
+    console.log('삭제하려는 영화 제목:', movieTitle);
+
+    try {
+        // MongoDB에서 리뷰를 삭제
+        await Review.findByIdAndDelete(reviewId);
+        console.log(`✅ 리뷰 삭제 완료: ${reviewId}`);
+
+       // 리뷰를 삭제한 후 /search 페이지로 리디렉션함. 
+        res.redirect(`/search?title=${movieTitle}`);
+
+    } catch (error) {
+        console.error("❌ 리뷰 삭제 오류:", error);
+        res.redirect(`/search?title=${movieTitle}&error=리뷰 삭제 실패`);
+    }
+});
+```
+- 발생한 에러
+  
+  : 기본 HTTP 메소드에서는 GET과 POST만을 지원함 -> DELETE 방식이 처리되지 않음. 
+- 해결방법
+  
+  : **method-override** 를 추가해, **DELETE 요청**을 처리할 수 있게 함. 
+
+```terminal
+npm install method-override
+```
+
+
+```javascript
+import express from 'express';
+import axios from 'axios';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv'; 
+import methodOverride from 'method-override'; 
+import Review from './models/Review.js';
+...
+
+// method-override 설정
+app.use(methodOverride('_method'));
+...
+```
+
+#### 1.6 리뷰 공감버튼, 비공감버튼 API 
+- 리뷰데이터 형식에 likes(공감), dislikes(비공감) 설정 
+
+```javascript Review.js 
+likes: {
+        type: Number,
+        default: 0
+    },
+    dislikes: {
+        type: Number,
+        default: 0
+    }
+```
+- id를 받아 좋아요와 싫어요를 증가시킨 다음 데이터베이스에 저장 
+
+```javasctipt 
+// POST 요청을 받으며, 공감버튼을 누를 때 동작 
+app.post('/review/like/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        review.likes += 1; //공감 수를 1 증가시킴 
+        await review.save(); //리뷰데이터 저장 
+
+       // 리뷰페이지로 돌아가, 공감수가 증가한 상태로 렌더링함.
+      // 'back' 은 이전 페이지로 돌아가는 기능 
+        res.redirect('back'); 
+    } catch (error) { //예외처리 
+        console.error("공감버튼 오류:", error);
+        res.redirect('back'); // 에러가 나도 다시 같은 페이지로
+    }
+});
+
+// 비동의버튼 
+app.post('/review/dislike/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        review.dislikes += 1;
+        await review.save();
+        
+        res.redirect('back'); 
+    } catch (error) {
+        console.error("비동의 버튼 오류:", error);
+        res.redirect('back'); 
+    }
+});
+```
+
+
+
+
 
 #### 2.1 Express 초기화 및 기본설정 
 - **Express** 라이브러리를 불러와 라우팅, 미들웨어 등을 쉽게 처리할 수 있게끔 합니다. 
@@ -108,6 +215,8 @@ const axios = require('axios');
 require('dotenv').config();
 const app = express();
 ```
+
+
 #### 2.2 서버포트 설정 및 뷰 엔진 설정(EJS 사용)
 - **EJS** 템플릿 엔진을 사용하면 HTML 안에서 JavaScript 코드를 동적으로 렌더링할 수 있습니다.
 ```javascript
