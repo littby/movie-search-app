@@ -229,6 +229,7 @@ const totalRating = reviews.reduce((acc, review) => acc + Number(review.rating),
 
 - 평균 별점을 계산합니다. 총합(totalRating)을 리뷰 개수로 나눕니다.
 - 조건부 연산자를 활용하여 reviews.length가 0이 아니라면, 계산을 진행합니다. 만약 리뷰가 존재하지 않다면, null을 반환합니다.
+
 **reviews.length ? (totalRating / reviews.length).toFixed(1) : null;**
 
 **toFixed(1)** : 소수점 한 자리까지 표현합니다. 
