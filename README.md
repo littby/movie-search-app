@@ -249,6 +249,9 @@ res.render('index', {
             avgRating: avgRating });
 ``` 
 
+*** 
+
+
 #### 2.1 Express 초기화 및 기본설정 
 - **Express** 라이브러리를 불러와 라우팅, 미들웨어 등을 쉽게 처리할 수 있게끔 합니다. 
 ```javascript
@@ -268,6 +271,8 @@ const OMDB_API_KEY = process.env.OMDB_API_KEY;
 app.set('view engine', 'ejs');
 app.use(express.static('public')); 
 ```
+
+***
 
 #### 3.1 MongoDB에 저장될 리뷰데이터 형식 
 ```javascript
@@ -294,6 +299,22 @@ const Review = mongoose.model('Review', reviewSchema);
 
 export default Review; 
 ```
+
+***
+#### 4.1 기타 
+- 리뷰데이터를 랜덤으로 생성 후 **MongoDB Compass** 를 사용해 리뷰 100개를 업로드했습니다.
+- JSON 형식의 파일을 Add Data 기능을 활용해 삽입했습니다.
+- 리뷰를 작성한 영화는 다음과 같습니다. 
+
+*Zootopia*
+
+*The Avengers*
+
+*Despicable Me*
+
+*Kung Fu Panda 4*
+
+*Elemental* 
 
   
 
