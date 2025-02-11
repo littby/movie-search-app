@@ -215,8 +215,10 @@ const reviews = await Review.find({ movieTitle });
 
 
 - 별점 총합을 계산할 때, 각 리뷰마다 rating 속성이 있는 것을 활용해, 값들을 모두 더해 구합니다.
-- 이때 javascript 의 reduce 메소드를 활용합니다. 또한 모든 리뷰의 총합을 totalRating에 저장합니다. 
+- 이때 javascript 의 reduce 메소드를 활용합니다. 또한 모든 리뷰의 총합을 totalRating에 저장합니다.
+   
 **acc** : 별점의 누적값이며, 초기값을 0으로 설정합니다.
+
 **Number(review.rating)** : rating 속성이 문자열일 수 있으므로 Number 속성으로 변경합니다.
 ```javascript
 const totalRating = reviews.reduce((acc, review) => acc + Number(review.rating), 0);
@@ -226,8 +228,9 @@ const totalRating = reviews.reduce((acc, review) => acc + Number(review.rating),
 
 
 - 평균 별점을 계산합니다. 총합(totalRating)을 리뷰 개수로 나눕니다.
-- 조건부 연산자를 활용하여 reviews.length가 0이 아니라면, 계산을 진행합니다. 만약 리뷰가 존재하지 않다면, null을 반환합니다. 
-** reviews.length ? (totalRating / reviews.length).toFixed(1) : null;**
+- 조건부 연산자를 활용하여 reviews.length가 0이 아니라면, 계산을 진행합니다. 만약 리뷰가 존재하지 않다면, null을 반환합니다.
+**reviews.length ? (totalRating / reviews.length).toFixed(1) : null;**
+
 **toFixed(1)** : 소수점 한 자리까지 표현합니다. 
 ```javascript
 const avgRating = reviews.length ? (totalRating / reviews.length).toFixed(1) : null;
