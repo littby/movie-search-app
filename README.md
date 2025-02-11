@@ -213,6 +213,7 @@ const reviews = await Review.find({ movieTitle });
 
 
 
+
 - 별점 총합을 계산할 때, 각 리뷰마다 rating 속성이 있는 것을 활용해, 값들을 모두 더해 구합니다.
 - 이때 javascript 의 reduce 메소드를 활용합니다. 또한 모든 리뷰의 총합을 totalRating에 저장합니다. 
 **acc** : 별점의 누적값이며, 초기값을 0으로 설정합니다.
