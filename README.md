@@ -277,7 +277,7 @@ const updatedReview = await Review.findByIdAndUpdate(
 res.redirect(`/search?title=${updatedReview.movieTitle}`);
 ```
 #### 1.9 리뷰 공감순으로 설정 
-- *app.get('/search')* 에서 .sort()를 사용하여 공감 수가 많은 순서대로 리뷰를 표시합니다. 
+- *app.get('/search')* 에서 **.sort()**를 사용하여 공감 수가 많은 순서대로 리뷰를 표시합니다. 
 - -1 : 내림차순, 1 : 오름차순
 
 **수정 전**  
