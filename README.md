@@ -249,6 +249,34 @@ res.render('index', {
             avgRating: avgRating });
 ``` 
 
+#### 1.8 리뷰 수정 코드 
+
+- **PUT** 요청을 받아서 내용을 수정합니다.  
+```javascript
+app.put('/review/:id', async (req, res) =>
+```
+
+- id 값을 가져와 reviewId 변수에 저장한 뒤, 사용자가 입력한 rating 과 comment를 가져옵니다.
+  
+``` javascrpit
+const reviewId = req.params.id;
+const { rating, comment } = req.body;
+``` 
+
+- findByIdAndUpdate() 메소드를 사용합니다.
+- MongoDB에 리뷰를 찾아 rating, comment를 업데이트합니다. 
+```javascript
+const updatedReview = await Review.findByIdAndUpdate(
+            reviewId, 
+            { rating, comment }, 
+            { new: true } 
+```
+- 리뷰 수정이 끝났다면 원래 영화페이지로 돌아갑니다.
+  
+```javascript
+res.redirect(`/search?title=${updatedReview.movieTitle}`);
+```
+
 *** 
 
 
