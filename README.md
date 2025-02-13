@@ -276,6 +276,14 @@ const updatedReview = await Review.findByIdAndUpdate(
 ```javascript
 res.redirect(`/search?title=${updatedReview.movieTitle}`);
 ```
+#### 1.9 리뷰 공감순으로 설정 
+
+- 특정 영화 (movieTitle)의 리뷰들을 가지고 온 다음, likes(공감 수)가 많은 순서대로 .sort()를 사용해 정렬합니다.
+- -1 : 내림차순, 1 : 오름차순
+```javascript
+const reviews = await Review.find({ movieTitle })
+    .sort({ likes: -1 }) 
+```
 
 *** 
 
