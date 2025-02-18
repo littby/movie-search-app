@@ -296,8 +296,8 @@ const reviews = await Review.find({ movieTitle }) .sort({ likes: -1 })
 
 - POST 요청을 보내면 데이터에서 movieTitle을 추출합니다. (예를 들어 {"movieTitle":"Zootopia"} 를 보낸다면, movieTitle 에 "Zootopia"가 저장됩니다.)  
 - MongoDB에서 Bookmark 를 조회하여, **findOne**을 사용해 영화제목이 일치하는지 확인 합니다.
-- **if** : 만약 이미 북마크가 있다면 **deleteOne**을 사용해 북마크를 삭제합니다. 이후 JSON 응답으로 { message: '북마크 삭제됨', isBookmarked: false }를 보냅니다.
-- **else** : 북마크가 있지 않다면, create 를 사용해 새로운 북마크를 생성합니다. 이후JSON 응답으로 { message: '북마크 추가됨',isBookmarked: true } 를 보냅니다.
+- **if** : 만약 이미 북마크가 되어있다면,  **deleteOne**을 사용해 북마크를 삭제합니다. 이후 JSON 응답으로 *{ message: '북마크 삭제됨', isBookmarked: false }* 를 보냅니다.
+- **else** : 북마크가 되어있지 않다면, create 를 사용해 새로운 북마크를 생성합니다. 이후JSON 응답으로 *{ message: '북마크 추가됨',isBookmarked: true }* 를 보냅니다.
   
 ```javascript
 app.post('/bookmark', async (req, res) => {
