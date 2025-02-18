@@ -12,6 +12,7 @@
 - **'models/'**: 영화 정보를 저장하는 모델 파일 
 - **'views/'**: 사용자에게 보여지는 HTML 구조
 - **'public/'**: CSS, 이미지 폴더
+  
 
   ***
 
@@ -290,6 +291,52 @@ const reviews = await Review.find({ movieTitle })
 const reviews = await Review.find({ movieTitle }) .sort({ likes: -1 }) 
 ```
 
+#### 1.10 북마크 기능 
+- 영화의 북마크 버튼을 누르면 호출되는 기능입니다. 
+
+- POST 요청을 보내면 데이터에서 movieTitle을 추출합니다. (예를 들어 {"movieTitle":"Zootopia"} 를 보낸다면, movieTitle 에 "Zootopia"가 저장됩니다.)  
+- MongoDB에서 Bookmark 를 조회하여, **findOne**을 사용해 영화제목이 일치하는지 확인 합니다.
+- **if** : 만약 이미 북마크가 있다면 **deleteOne**을 사용해 북마크를 삭제합니다. 이후 JSON 응답으로 { message: '북마크 삭제됨', isBookmarked: false }를 보냅니다.
+- **else** : 북마크가 있지 않다면, create 를 사용해 새로운 북마크를 생성합니다. 이후JSON 응답으로 { message: '북마크 추가됨',isBookmarked: true } 를 보냅니다.
+  
+```javascript
+app.post('/bookmark', async (req, res) => {
+    const { movieTitle } = req.body;
+
+    try {
+        const bookmark = await Bookmark.findOne({ movieTitle: movieTitle });
+
+        if (bookmark) {
+            await Bookmark.deleteOne({ movieTitle: movieTitle }); // 이미 있으면 삭제 (토글 기능)
+            return res.json({ message: '북마크 삭제됨',isBookmarked: false });
+        } else {
+            await Bookmark.create({ movieTitle: movieTitle });
+            return res.json({ message: '북마크 추가됨',isBookmarked: true });
+        }
+    } catch (error) {
+        console.error('❌ 북마크 오류:', error);
+        res.status(500).json({ error: '서버 오류' });
+    }
+});
+```
+
+
+- 북마크된 영화 목록을 볼 때 호출되는 기능입니다.
+- **Bookmark.find()**를 사용해 MongoDB의 Bookmark에 있는 (북마크 된) 영화 제목들을 가져옵니다.
+- res.render('bookmarks', { bookmarks }); 를 사용하여 bookmarks.ejs 템플릿에 전달합니다. 전달 받은 bookmarks 데이터를 사용해 북마크된 영화 목록을 화면에 표시합니다. 
+```javascript
+app.get('/bookmarks', async (req, res) => {
+    try {
+        const bookmarks = await Bookmark.find();
+        res.render('bookmarks', { bookmarks });
+    } catch (error) {
+        console.error('❌ 북마크 목록 불러오기 오류:', error);
+        res.status(500).send('북마크 목록을 가져올 수 없습니다.');
+    }
+});
+
+```
+
 *** 
 
 
@@ -342,7 +389,25 @@ export default Review;
 ```
 
 ***
-#### 4.1 기타 
+#### 4.1 북마크 스키마 정의 
+- 영화 제목은 반드시 있어야하고(required), 같은 영화가 중복으로 북마크 되지 않도록 합니다.(unique)
+```javascript
+import mongoose from 'mongoose';
+
+const bookmarkSchema = new mongoose.Schema({
+    movieTitle: { 
+        type: String, 
+        required: true, 
+        unique: true }
+});
+
+const Bookmark = mongoose.model('Bookmark', bookmarkSchema); 
+
+export default Bookmark;
+```
+***
+
+#### 5.1 기타 
 - 리뷰데이터를 랜덤으로 생성 후 **MongoDB Compass** 를 사용해 리뷰 100개를 업로드했습니다.
 - JSON 형식의 파일을 Add Data 기능을 활용해 삽입했습니다.
 - 리뷰를 작성한 영화는 다음과 같습니다. 
