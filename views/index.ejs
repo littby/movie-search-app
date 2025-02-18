@@ -18,6 +18,10 @@
 
     <!-- 영화 정보 출력 부분 -->
     <% if (movie) { %>
+        
+         
+        <button onclick="location.href='/bookmarks'">북마크 페이지</button>
+
         <div class="movie-card">
             <h2><%= movie.Title %> (<%= movie.Year %>)</h2>
             <img src="<%= movie.Poster %>" alt="Movie Poster">
@@ -25,14 +29,46 @@
             <p><strong>평점:</strong> <%= movie.imdbRating %> (IMDb)</p>
             <p><strong>출연:</strong> <%= movie.Actors %></p>
 
+            <button class="bookmark-btn" data-title="<%= movie.Title %>" data-bookmarked="<%= isBookmarked ? 'true' : 'false' %>" onclick="toggleBookmark('<%= movie.Title %>', this)">
+                <%= isBookmarked ? '❤️' : '🤍' %> 
+            </button>
+
+            <script>
+                // 북마크 상태 토글
+                async function toggleBookmark(movieTitle, button) {
+                    try {
+                        const response = await fetch('/bookmark', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ movieTitle }),
+                        });
+            
+                        const data = await response.json();
+                        if (data.isBookmarked) {
+                            button.innerHTML = '❤️'; // 북마크 추가되면 빨간 하트로 변경
+                        } else {
+                            button.innerHTML = '🤍'; // 북마크 삭제되면 빈 하트로 변경
+                        }
+                    } catch (error) {
+                        console.error('북마크 오류:', error);
+                    }
+                }
+            </script>
+
+            
+
+
             <h3>별점 및 의견 남기기</h3>
             <form action="/review" method="POST">
                 <input type="hidden" name="movieTitle" value="<%= movie.Title %>">
-                <label for="author">작성자:</label>
-                <input type="text" name="author" placeholder="닉네임 입력하세요" required>
                 
+                <label for="author">작성자:</label>
+                <input type="text" name="author" placeholder="닉네임 입력하세요" required style="height: 20px; width: 150px;">
+
                 <label for="rating">별점:</label>
-                <select name="rating" required>
+                <select name="rating" required style="height: 24px; width: 80px;">
                     <option value="1">⭐</option>
                     <option value="2">⭐⭐</option>
                     <option value="3">⭐⭐⭐</option>
@@ -41,32 +77,55 @@
                 </select>
 
                 <label for="comment">의견:</label>
-                <textarea name="comment" required></textarea>
+                <textarea name="comment" required style="height: 50px; width: 200px;"></textarea>
 
-                <button type="submit">리뷰 남기기</button>
+                <button type="submit" style="height: 50px; width: 100px;">리뷰 남기기</button>
             </form>
 
             <!-- 저장된 리뷰 목록 -->
-            <h3>리뷰</h3>
+            <h3>리뷰 <% if (avgRating) { %> (평균 별점: <%= avgRating %> ⭐) <% } %></h3>
             <% if (reviews.length > 0) { %>
                 <ul>
                     <% reviews.forEach(review => { %>
                         <li>
                             <strong>작성자: <%= review.author %></strong><br>
-                            <strong>⭐ <%= review.rating %></strong> - <%= review.comment %>
-                            
-                            <form action="/review/like/<%= review._id %>" method="POST" style="display: inline;">
-                                <button class="like-button" data-id="<%= review._id %>">👍 공감해요 (<%= review.likes %>)</button>
 
+                            <!-- 기존 리뷰 텍스트 -->
+                            <span id="review-text-<%= review._id %>">
+                                <strong>⭐ <%= review.rating %></strong> - <%= review.comment %>
+                            </span>
+
+                            <!-- 수정 폼 (처음에는 숨김 상태) -->
+                            <form action="/review/<%= review._id %>?_method=PUT" method="POST" id="edit-form-<%= review._id %>" style="display: none;">
+                                <label>별점:</label>
+                                <select name="rating">
+                                    <option value="1" <% if (review.rating == 1) { %>selected<% } %>>⭐</option>
+                                    <option value="2" <% if (review.rating == 2) { %>selected<% } %>>⭐⭐</option>
+                                    <option value="3" <% if (review.rating == 3) { %>selected<% } %>>⭐⭐⭐</option>
+                                    <option value="4" <% if (review.rating == 4) { %>selected<% } %>>⭐⭐⭐⭐</option>
+                                    <option value="5" <% if (review.rating == 5) { %>selected<% } %>>⭐⭐⭐⭐⭐</option>
+                                </select>
+
+                                <label>의견:</label>
+                                <input type="text" name="comment" value="<%= review.comment %>">
+
+                                <button type="submit">✔ 저장</button>
+                            </form>
+
+                            <!-- 수정 버튼 -->
+                            <button onclick="toggleEditForm('<%= review._id %>')">✏ 수정</button>
+
+                            <!-- 좋아요, 싫어요, 삭제 버튼 -->
+                            <form action="/review/like/<%= review._id %>" method="POST" style="display: inline;">
+                                <button>👍 공감해요 (<%= review.likes %>)</button>
                             </form>
                             <form action="/review/dislike/<%= review._id %>" method="POST" style="display: inline;">
-                                <button class="dislike-button" data-id="<%= review._id %>">👎 동의 못해요 (<%= review.dislikes %>)</button>
+                                <button>👎 동의 못해요 (<%= review.dislikes %>)</button>
                             </form>
-
                             <form action="/review/delete" method="POST" style="display: inline;">
                                 <input type="hidden" name="reviewId" value="<%= review._id %>">
-                                <input type="hidden" name="movieTitle" value="<%= movie.Title %>"> <!-- method-override 추가 -->
-                                <button class="delete-button" type="submit">🗑 삭제</button>
+                                <input type="hidden" name="movieTitle" value="<%= movie.Title %>">
+                                <button>🗑 삭제</button>
                             </form>
                         </li>
                     <% }); %>
@@ -74,17 +133,30 @@
             <% } else { %>
                 <p>아직 리뷰가 없습니다. 첫 번째 리뷰를 남겨보세요!</p>
             <% } %>
-        </div> <!-- ✅ 영화 카드 닫기 (여기까지가 movie 정보) -->
-    <% } else if (error) { %> <!-- ✅ `else if (error)`를 바깥으로 빼기 -->
+        </div> <!-- ✅ 영화 카드 닫기 -->
+    <% } else if (error) { %> 
         <p class="error-message"><%= error %></p>
     <% } %>
 
     <script>
         // 폼 제출 시 로딩 상태 표시
         document.getElementById('searchForm').onsubmit = function() {
-            document.getElementById('loading').style.display = 'block'; // 로딩 중 메시지 표시
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        // 리뷰 수정 폼 토글 기능
+        function toggleEditForm(reviewId) {
+            const reviewText = document.getElementById(`review-text-${reviewId}`);
+            const editForm = document.getElementById(`edit-form-${reviewId}`);
+
+            if (editForm.style.display === "none") {
+                editForm.style.display = "block";
+                reviewText.style.display = "none";
+            } else {
+                editForm.style.display = "none";
+                reviewText.style.display = "block";
+            }
         }
     </script>
 </body>
 </html>
-

@@ -1,18 +1,21 @@
 import express from 'express';
 import axios from 'axios';
+import path from 'path';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv'; 
 import methodOverride from 'method-override'; 
 import Review from './models/Review.js';
-import passport from 'passport';
-import session from 'express-session'; 
-import User from './models/user.js'; // 사용자 모델 불러오기
-import './config/passport.js'; // passport 설정 파일
+import session from 'express-session';
+import Bookmark from './models/Bookmark.js';
+
 
 
 dotenv.config();  // .env 파일 불러오기
 
 const app = express();
+
+app.set('view engine', 'ejs'); // EJS 템플릿 엔진 사용
+app.set('views', path.join(path.resolve(), 'views'));
 
 const PORT = 3000;
 const OMDB_API_KEY = process.env.OMDB_API_KEY;
@@ -30,9 +33,7 @@ app.use(session({
     saveUninitialized: false,
 }));
 
-// Passport 초기화
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); 
@@ -43,74 +44,70 @@ app.use(methodOverride('_method'));
 // EJS 설정
 app.set('view engine', 'ejs');
 
-//회원가입 API 
-app.post('/signup', async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const newUser = new User({ email, password });
-        await newUser.save();
-        res.redirect('/login'); // 회원가입 후 로그인 페이지로 리디렉션
-    } catch (error) {
-        console.error("❌ 회원가입 오류:", error);
-        res.redirect('/signup'); // 오류 발생 시 회원가입 페이지로 리디렉션
-    }
-});
 
-//로그인 API
-app.post('/login', passport.authenticate('local', {
-    successRedirect: '/', // 로그인 성공 후 홈으로 리디렉션
-    failureRedirect: '/login', // 로그인 실패 시 로그인 페이지로 리디렉션
-    failureFlash: true, // 로그인 실패 시 플래시 메시지 표시
-}));
 
-//로그아웃 API
-app.get('/logout', (req, res) => {
-    req.logout((err) => {
-        if (err) return next(err);
-        res.redirect('/'); // 로그아웃 후 홈 페이지로 리디렉션
-    });
-});
 
 app.use(express.static('public')); // 정적 파일 경로 설정
 
 // 기본 페이지 렌더링
 app.get('/', (req, res) => {
-    res.render('index', { movie: null, error: null }); // 기본 페이지는 movie와 error를 null로 전달
+    res.render('index', {
+        user: req.user,
+        movie: null, 
+        error: null,
+        reviews: [],
+        avgRating: null
+    }); // 기본 페이지는 movie와 error를 null로 전달
 });
 
-// 인증 
-function isAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect('/login'); // 로그인 안 된 사용자는 로그인 페이지로 리디렉션
-}
-
-// 예시: 로그인한 사용자만 접근할 수 있는 페이지
-app.get('/dashboard', isAuthenticated, (req, res) => {
-    res.render('dashboard', { user: req.user }); // 로그인한 사용자 정보 전달
-});
 
 
 // 영화 검색 API 연동
 app.get('/search', async (req, res) => {
     const movieTitle = req.query.title;
     if (!movieTitle) {
-        return res.render('index', { movie: null, error: '영화 제목을 입력해주세요.', reviews: [] });
+        return res.render('index', { 
+            movie: null, 
+            error: '영화 제목을 입력해주세요.', 
+            reviews: [],
+            avgRating: null });
     }
 
     try {
         const response = await axios.get(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${movieTitle}`);
         if (response.data.Response === 'False') {
-            return res.render('index', { movie: null, error: '해당 영화의 정보가 없습니다.', reviews: [] });
+            return res.render('index', { 
+                movie: null, 
+                error: '해당 영화의 정보가 없습니다.', 
+                reviews: [],
+                avgRating: null
+             });
         }
 
-        const reviews = await Review.find({ movieTitle });
+        const isBookmarked = await Bookmark.findOne({ movieTitle: response.data.Title }) ? true : false;
+
+
+        // 평균 별점 계산 
+        const reviews = await Review.find({ movieTitle }).sort({ likes: -1 });
+        const totalRating = reviews.reduce((acc, review) => acc + Number(review.rating), 0);
+        const avgRating = reviews.length ? (totalRating / reviews.length).toFixed(1) : null;
+
         
-        res.render('index', { movie: response.data, error: null, reviews: reviews }); // 리뷰도 함께 전달
+        res.render('index', { 
+            movie: response.data, 
+            error: null, 
+            reviews: reviews,
+            avgRating: avgRating,
+            isBookmarked }); // 리뷰도 함께 전달
     } catch (error) {
         console.error(error);  // 콘솔에 에러 출력
-        res.render('index', { movie: null, error: '영화 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.', reviews: [] });
+        res.render('index', { 
+            movie: null, 
+            error: '영화 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.', 
+            reviews: [],
+            avgRating: null,
+            isBookmarked : false 
+        });
     }
 });
 
@@ -139,7 +136,11 @@ app.post('/review', async (req, res) => {
         const reviews = await Review.find({ movieTitle }); // 리뷰를 다시 조회
 
         // 영화 정보와 모든 리뷰를 렌더링
-        res.render('index', { movie: response.data, reviews: reviews, error: null });
+        res.render('index', { 
+            movie: response.data, 
+            reviews: reviews, 
+            error: null,
+            avgRating: avgRating });
 
     } catch (error) {
         console.error("❌ 리뷰 저장 오류:", error);
@@ -193,7 +194,52 @@ app.post('/review/dislike/:id', async (req, res) => {
     }
 });
 
+app.put('/review/:id', async (req, res) => {
+    const reviewId = req.params.id;
+    const { rating, comment } = req.body;
+    
 
+    try {
+        const updatedReview = await Review.findByIdAndUpdate(
+            reviewId, 
+            { rating, comment }, 
+            { new: true } // 업데이트 후 변경된 데이터 반환
+        );
 
+        console.log("✅ 리뷰 수정 완료:", updatedReview);
+        res.redirect(`/search?title=${updatedReview.movieTitle}`);
+    } catch (error) {
+        console.error("❌ 리뷰 수정 오류:", error);
+        res.redirect(`/search?title=${req.body.movieTitle}&error=리뷰 수정 실패`);
+    }
+});
 
+app.post('/bookmark', async (req, res) => {
+    const { movieTitle } = req.body;
+
+    try {
+        const bookmark = await Bookmark.findOne({ movieTitle: movieTitle });
+
+        if (bookmark) {
+            await Bookmark.deleteOne({ movieTitle: movieTitle }); // 이미 있으면 삭제 (토글 기능)
+            return res.json({ message: '북마크 삭제됨',isBookmarked: false });
+        } else {
+            await Bookmark.create({ movieTitle: movieTitle });
+            return res.json({ message: '북마크 추가됨',isBookmarked: true });
+        }
+    } catch (error) {
+        console.error('❌ 북마크 오류:', error);
+        res.status(500).json({ error: '서버 오류' });
+    }
+});
+
+app.get('/bookmarks', async (req, res) => {
+    try {
+        const bookmarks = await Bookmark.find();
+        res.render('bookmarks', { bookmarks });
+    } catch (error) {
+        console.error('❌ 북마크 목록 불러오기 오류:', error);
+        res.status(500).send('북마크 목록을 가져올 수 없습니다.');
+    }
+});
 
