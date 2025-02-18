@@ -322,8 +322,8 @@ app.post('/bookmark', async (req, res) => {
 
 
 - 북마크된 영화 목록을 볼 때 호출되는 기능입니다.
-- **Bookmark.find()**를 사용해 MongoDB의 Bookmark에 있는 (북마크 된) 영화 제목들을 가져옵니다.
-- res.render('bookmarks', { bookmarks }); 를 사용하여 bookmarks.ejs 템플릿에 전달합니다. 전달 받은 bookmarks 데이터를 사용해 북마크된 영화 목록을 화면에 표시합니다. 
+- **Bookmark.find()** 를 사용해 MongoDB의 Bookmark에 있는 (북마크 된) 영화 제목들을 가져옵니다.
+- res.render('bookmarks', { bookmarks }); 를 사용하여 bookmarks.ejs 템플릿에 전달합니다. 전달 받은 bookmarks 데이터를 사용해 **북마크된 영화 목록**을 화면에 표시합니다. 
 ```javascript
 app.get('/bookmarks', async (req, res) => {
     try {
